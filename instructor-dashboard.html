@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TA Copilot - Instructor Dashboard</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f5f5; }
+        .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+        header { background: white; padding: 20px; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        h1 { color: #333; font-size: 24px; }
+        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .stat-card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .stat-card h3 { font-size: 14px; color: #666; margin-bottom: 8px; }
+        .stat-card .number { font-size: 32px; font-weight: bold; color: #2563eb; }
+        .main-content { display: grid; grid-template-columns: 1fr 400px; gap: 20px; }
+        .email-list { background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .email-item { padding: 15px; border-bottom: 1px solid #eee; cursor: pointer; transition: background 0.2s; }
+        .email-item:hover { background: #f9fafb; }
+        .email-item.active { background: #eff6ff; border-left: 3px solid #2563eb; }
+        .email-header { display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px; }
+        .email-subject { font-weight: 600; color: #333; }
+        .email-meta { font-size: 12px; color: #666; }
+        .badge { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+        .badge.pending { background: #fef3c7; color: #92400e; }
+        .badge.review { background: #dbeafe; color: #1e40af; }
+        .badge.sent { background: #d1fae5; color: #065f46; }
+        .badge.escalation { background: #fee2e2; color: #991b1b; }
+        .email-detail { background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); padding: 20px; }
+        .detail-section { margin-bottom: 20px; }
+        .detail-section h3 { font-size: 14px; color: #666; margin-bottom: 8px; }
+        .detail-content { background: #f9fafb; padding: 15px; border-radius: 6px; border-left: 3px solid #2563eb; }
+        textarea { width: 100%; min-height: 150px; padding: 12px; border: 1px solid #ddd; border-radius: 6px; font-family: inherit; resize: vertical; }
+        .actions { display: flex; gap: 10px; margin-top: 15px; }
+        button { padding: 10px 20px; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+        .btn-primary { background: #2563eb; color: white; }
+        .btn-primary:hover { background: #1d4ed8; }
+        .btn-secondary { background: #e5e7eb; color: #374151; }
+        .btn-secondary:hover { background: #d1d5db; }
+        .btn-danger { background: #dc2626; color: white; }
+        .btn-danger:hover { background: #b91c1c; }
+        .loading { text-align: center; padding: 40px; color: #666; }
+        .empty-state { text-align: center; padding: 60px 20px; color: #666; }
+        .sentiment { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; }
+        .sentiment-icon { width: 16px; height: 16px; }
+        @media (max-width: 1024px) { .main-content { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📧 TA Copilot - Instructor Dashboard</h1>
+        </header>
+
+        <div class="stats" id="stats">
+            <div class="stat-card">
+                <h3>Weekly Questions</h3>
+                <div class="number" id="weeklyQuestions">-</div>
+            </div>
+            <div class="stat-card">
+                <h3>Unanswered</h3>
+                <div class="number" id="unanswered">-</div>
+            </div>
+            <div class="stat-card">
+                <h3>Regrade Requests</h3>
+                <div class="number" id="regradeCount">-</div>
+            </div>
+        </div>
+
+        <div style="margin-bottom: 15px; background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+            <label style="font-size: 14px; color: #666; margin-right: 10px;">📁 Filter by Topic:</label>
+            <select id="topicFilter" onchange="filterByTopic()" style="padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px;">
+                <option value="">All Topics</option>
+            </select>
+        </div>
+
+        <div class="main-content">
+            <div class="email-list" id="emailList">
+                <div class="loading">Loading emails...</div>
+            </div>
+
+            <div class="email-detail" id="emailDetail" style="display: none;">
+                <div class="detail-section">
+                    <h3>From</h3>
+                    <div id="detailSender"></div>
+                </div>
+                <div class="detail-section">
+                    <h3>Subject</h3>
+                    <div id="detailSubject"></div>
+                </div>
+                <div class="detail-section">
+                    <h3>Message</h3>
+                    <div class="detail-content" id="detailBody"></div>
+                </div>
+                <div class="detail-section">
+                    <h3>AI Suggested Reply</h3>
+                    <textarea id="replyText" placeholder="Click 'Generate Reply' to get AI suggestion"></textarea>
+                </div>
+                <div class="actions">
+                    <button class="btn-primary" onclick="generateReply()">🤖 Generate Reply</button>
+                    <button class="btn-primary" onclick="sendReply()">📤 Send to Canvas</button>
+                    <button class="btn-secondary" onclick="classifyEmail()">🏷️ Classify</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Backend is now publicly accessible!
+        const API_BASE = 'http://18.236.97.111:8000';
+        let currentEmailId = null;
+        let emails = [];
+
+        async function fetchInsights() {
+            try {
+                const res = await fetch(`${API_BASE}/insights/summary`);
+                const data = await res.json();
+                document.getElementById('weeklyQuestions').textContent = data.weekly_questions;
+                document.getElementById('unanswered').textContent = data.unanswered_questions;
+                document.getElementById('regradeCount').textContent = data.regrade_count;
+            } catch (err) {
+                console.error('Failed to fetch insights:', err);
+            }
+        }
+
+        async function fetchEmails() {
+            try {
+                const res = await fetch(`${API_BASE}/emails`);
+                const data = await res.json();
+                emails = data.emails;
+                updateTopicFilter();
+                renderEmailList();
+            } catch (err) {
+                document.getElementById('emailList').innerHTML = '<div class="empty-state">Failed to load emails</div>';
+            }
+        }
+
+        function updateTopicFilter() {
+            const allTopics = new Set();
+            emails.forEach(email => {
+                email.insight_tags.forEach(tag => allTopics.add(tag));
+            });
+            
+            const filter = document.getElementById('topicFilter');
+            const currentValue = filter.value;
+            filter.innerHTML = '<option value="">All Topics</option>' + 
+                Array.from(allTopics).sort().map(topic => 
+                    `<option value="${topic}">${topic}</option>`
+                ).join('');
+            filter.value = currentValue;
+        }
+
+        function filterByTopic() {
+            renderEmailList();
+        }
+
+        function renderEmailList() {
+            const container = document.getElementById('emailList');
+            const selectedTopic = document.getElementById('topicFilter').value;
+            
+            let filteredEmails = emails;
+            if (selectedTopic) {
+                filteredEmails = emails.filter(email => 
+                    email.insight_tags.includes(selectedTopic)
+                );
+            }
+            
+            if (filteredEmails.length === 0) {
+                container.innerHTML = '<div class="empty-state">No emails in this topic</div>';
+                return;
+            }
+
+            container.innerHTML = filteredEmails.map(email => `
+                <div class="email-item ${currentEmailId === email.email_id ? 'active' : ''}" onclick="selectEmail('${email.email_id}')">
+                    <div class="email-header">
+                        <div class="email-subject">${email.subject}</div>
+                        <span class="badge ${getStatusClass(email.status)}">${email.status}</span>
+                    </div>
+                    <div class="email-meta">
+                        From: ${email.sender} | ${email.course_id}
+                        ${email.insight_tags.length > 0 ? `<br>📁 ${email.insight_tags.join(', ')}` : ''}
+                        ${email.needs_escalation ? ' <span class="badge escalation">⚠️</span>' : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function getStatusClass(status) {
+            if (status.includes('pending')) return 'pending';
+            if (status.includes('review')) return 'review';
+            if (status.includes('sent')) return 'sent';
+            return 'pending';
+        }
+
+        function selectEmail(emailId) {
+            currentEmailId = emailId;
+            const email = emails.find(e => e.email_id === emailId);
+            if (!email) return;
+
+            document.getElementById('detailSender').textContent = email.sender;
+            document.getElementById('detailSubject').textContent = email.subject;
+            document.getElementById('detailBody').textContent = email.body;
+            document.getElementById('replyText').value = email.suggested_reply || '';
+            document.getElementById('emailDetail').style.display = 'block';
+            renderEmailList();
+        }
+
+        async function generateReply() {
+            if (!currentEmailId) return;
+            const btn = event.target;
+            btn.disabled = true;
+            btn.textContent = '⏳ Generating...';
+
+            try {
+                const res = await fetch(`${API_BASE}/emails/${currentEmailId}/generate-reply`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({})
+                });
+                const data = await res.json();
+                document.getElementById('replyText').value = data.email.suggested_reply;
+                
+                const emailIndex = emails.findIndex(e => e.email_id === currentEmailId);
+                if (emailIndex !== -1) {
+                    emails[emailIndex] = data.email;
+                    renderEmailList();
+                }
+                
+                alert('✅ Reply generated successfully!');
+            } catch (err) {
+                alert('❌ Failed to generate reply');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '🤖 Generate Reply';
+            }
+        }
+
+        async function classifyEmail() {
+            if (!currentEmailId) return;
+            const btn = event.target;
+            btn.disabled = true;
+            btn.textContent = '⏳ Classifying...';
+
+            try {
+                const res = await fetch(`${API_BASE}/emails/${currentEmailId}/classify`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({})
+                });
+                const data = await res.json();
+                
+                const emailIndex = emails.findIndex(e => e.email_id === currentEmailId);
+                if (emailIndex !== -1) {
+                    emails[emailIndex] = data.email;
+                    renderEmailList();
+                }
+                
+                // Show classification with topics
+                const topics = data.email.insight_tags.join(', ') || 'general';
+                const message = `✅ Email Classified!\n\n` +
+                    `📁 Topics: ${topics}\n` +
+                    `📊 Type: ${data.email.classification}\n` +
+                    `😊 Sentiment: ${data.email.sentiment}\n` +
+                    `${data.email.needs_escalation ? '⚠️ Needs Escalation' : '✅ Can be handled automatically'}`;
+                
+                alert(message);
+                
+                alert(`✅ Classified as: ${data.email.classification}`);
+            } catch (err) {
+                alert('❌ Failed to classify email');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '🏷️ Classify';
+            }
+        }
+
+        async function sendReply() {
+            if (!currentEmailId) return;
+            const reply = document.getElementById('replyText').value;
+            if (!reply.trim()) {
+                alert('Please generate or write a reply first');
+                return;
+            }
+
+            const email = emails.find(e => e.email_id === currentEmailId);
+            const courseId = '14388425'; // Default course ID
+
+            if (!confirm('Send this reply as Canvas announcement?')) return;
+
+            const btn = event.target;
+            btn.disabled = true;
+            btn.textContent = '⏳ Sending...';
+
+            try {
+                const res = await fetch(`${API_BASE}/announcements/send-announcement`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        course_id: courseId,
+                        title: `Re: ${email.subject}`,
+                        message: reply
+                    })
+                });
+                
+                if (!res.ok) {
+                    const error = await res.json();
+                    throw new Error(error.detail || 'Failed to send');
+                }
+                
+                const data = await res.json();
+                alert('✅ Announcement posted to Canvas successfully!');
+                
+                // Update email status
+                const emailIndex = emails.findIndex(e => e.email_id === currentEmailId);
+                if (emailIndex !== -1) {
+                    emails[emailIndex].status = 'sent';
+                    renderEmailList();
+                }
+            } catch (err) {
+                alert(`❌ Failed to send: ${err.message}\n\nMake sure Canvas API token is configured.`);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '📤 Send to Canvas';
+            }
+        }
+
+        // Initialize
+        fetchInsights();
+        fetchEmails();
+        setInterval(fetchEmails, 30000); // Refresh every 30s
+    </script>
+</body>
+</html>

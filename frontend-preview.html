@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TA Copilot - Instructor Dashboard (PREVIEW)</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f5f5; }
+        .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+        header { background: white; padding: 20px; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        h1 { color: #333; font-size: 24px; }
+        .preview-banner { background: #fef3c7; border: 2px solid #f59e0b; padding: 15px; border-radius: 8px; margin-bottom: 20px; text-align: center; }
+        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .stat-card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .stat-card h3 { font-size: 14px; color: #666; margin-bottom: 8px; }
+        .stat-card .number { font-size: 32px; font-weight: bold; color: #2563eb; }
+        .main-content { display: grid; grid-template-columns: 1fr 400px; gap: 20px; }
+        .email-list { background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .email-item { padding: 15px; border-bottom: 1px solid #eee; cursor: pointer; transition: background 0.2s; }
+        .email-item:hover { background: #f9fafb; }
+        .email-item.active { background: #eff6ff; border-left: 3px solid #2563eb; }
+        .email-header { display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px; }
+        .email-subject { font-weight: 600; color: #333; }
+        .email-meta { font-size: 12px; color: #666; }
+        .badge { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; margin-left: 5px; }
+        .badge.pending { background: #fef3c7; color: #92400e; }
+        .badge.review { background: #dbeafe; color: #1e40af; }
+        .badge.escalation { background: #fee2e2; color: #991b1b; }
+        .email-detail { background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); padding: 20px; }
+        .detail-section { margin-bottom: 20px; }
+        .detail-section h3 { font-size: 14px; color: #666; margin-bottom: 8px; }
+        .detail-content { background: #f9fafb; padding: 15px; border-radius: 6px; border-left: 3px solid #2563eb; }
+        textarea { width: 100%; min-height: 150px; padding: 12px; border: 1px solid #ddd; border-radius: 6px; font-family: inherit; resize: vertical; }
+        .actions { display: flex; gap: 10px; margin-top: 15px; }
+        button { padding: 10px 20px; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+        .btn-primary { background: #2563eb; color: white; }
+        .btn-primary:hover { background: #1d4ed8; }
+        .btn-secondary { background: #e5e7eb; color: #374151; }
+        .btn-secondary:hover { background: #d1d5db; }
+        @media (max-width: 1024px) { .main-content { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="preview-banner">
+            <strong>📋 PREVIEW MODE</strong> - This is showing mock data. Connect to backend to see real emails.
+        </div>
+
+        <header>
+            <h1>📧 TA Copilot - Instructor Dashboard</h1>
+        </header>
+
+        <div class="stats">
+            <div class="stat-card">
+                <h3>Weekly Questions</h3>
+                <div class="number">2</div>
+            </div>
+            <div class="stat-card">
+                <h3>Unanswered</h3>
+                <div class="number">2</div>
+            </div>
+            <div class="stat-card">
+                <h3>Regrade Requests</h3>
+                <div class="number">0</div>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="email-list">
+                <div class="email-item active" onclick="showEmail(1)">
+                    <div class="email-header">
+                        <div class="email-subject">Question about assignment deadline</div>
+                        <span class="badge review">pending_review</span>
+                    </div>
+                    <div class="email-meta">
+                        From: student1@university.com | ECE101
+                    </div>
+                </div>
+                <div class="email-item" onclick="showEmail(2)">
+                    <div class="email-header">
+                        <div class="email-subject">Regrade request for quiz 2</div>
+                        <span class="badge escalation">⚠️ escalation</span>
+                    </div>
+                    <div class="email-meta">
+                        From: student2@university.com | ECE101
+                    </div>
+                </div>
+            </div>
+
+            <div class="email-detail" id="emailDetail">
+                <div class="detail-section">
+                    <h3>From</h3>
+                    <div id="detailSender">student1@university.com</div>
+                </div>
+                <div class="detail-section">
+                    <h3>Subject</h3>
+                    <div id="detailSubject">Question about assignment deadline</div>
+                </div>
+                <div class="detail-section">
+                    <h3>Message</h3>
+                    <div class="detail-content" id="detailBody">Hi professor, is the assignment due tonight at 11:59 PM?</div>
+                </div>
+                <div class="detail-section">
+                    <h3>AI Suggested Reply</h3>
+                    <textarea id="replyText">Hi, yes, the assignment is due tonight at 11:59 PM as stated on the course page.</textarea>
+                </div>
+                <div class="actions">
+                    <button class="btn-primary" onclick="alert('🤖 In real version: Generates AI reply using Amazon Bedrock')">🤖 Generate Reply</button>
+                    <button class="btn-primary" onclick="alert('📤 In real version: Posts to Canvas as announcement')">📤 Send to Canvas</button>
+                    <button class="btn-secondary" onclick="alert('🏷️ In real version: Classifies email with AI')">🏷️ Classify</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const emails = {
+            1: {
+                sender: 'student1@university.com',
+                subject: 'Question about assignment deadline',
+                body: 'Hi professor, is the assignment due tonight at 11:59 PM?',
+                reply: 'Hi, yes, the assignment is due tonight at 11:59 PM as stated on the course page.'
+            },
+            2: {
+                sender: 'student2@university.com',
+                subject: 'Regrade request for quiz 2',
+                body: 'Hello, I think my short answer for question 3 deserves more marks.',
+                reply: 'Thanks for reaching out. Your request has been noted and will be reviewed according to the course regrade policy.'
+            }
+        };
+
+        function showEmail(id) {
+            const email = emails[id];
+            document.getElementById('detailSender').textContent = email.sender;
+            document.getElementById('detailSubject').textContent = email.subject;
+            document.getElementById('detailBody').textContent = email.body;
+            document.getElementById('replyText').value = email.reply;
+            
+            document.querySelectorAll('.email-item').forEach(item => item.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+        }
+    </script>
+</body>
+</html>
