@@ -1,9 +1,10 @@
 from typing import Optional
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel
 import requests
 from app.config import settings
-from app.services.dynamodb_service import get_email_by_id, update_email_reply
+from app.services.dynamodb_service import get_email_by_id, update_email_reply, create_email
+from app.models.email_models import EmailCreate
 
 router = APIRouter()
 
@@ -12,6 +13,48 @@ class SendAnnouncementRequest(BaseModel):
     course_id: str
     title: str
     message: str
+
+
+class LambdaEmailWebhook(BaseModel):
+    """Webhook payload from Lambda when new email arrives"""
+    sender: str
+    subject: str
+    body: str
+    course_id: Optional[str] = None
+    message_id: Optional[str] = None
+    recipients: Optional[list] = None
+    received_at: Optional[str] = None
+
+
+@router.post("/webhook/email")
+async def receive_email_from_lambda(payload: LambdaEmailWebhook):
+    """
+    Webhook endpoint for Lambda to send new emails.
+    Lambda URL: http://18.236.97.111:8000/announcements/webhook/email
+    """
+    
+    # Create email in database
+    email_data = EmailCreate(
+        course_id=payload.course_id or "INBOX",
+        sender=payload.sender,
+        subject=payload.subject,
+        body=payload.body,
+        source_provider="lambda-webhook",
+        source_message_id=payload.message_id,
+        recipients=payload.recipients or [],
+        received_at=payload.received_at
+    )
+    
+    email = create_email(email_data)
+    
+    if not email:
+        raise HTTPException(status_code=409, detail="Email already exists or failed to create")
+    
+    return {
+        "success": True,
+        "message": "Email received and stored",
+        "email_id": email.email_id
+    }
 
 
 @router.post("/send-announcement")
