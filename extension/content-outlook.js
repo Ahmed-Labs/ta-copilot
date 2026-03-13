@@ -1,5 +1,5 @@
 // Backend API base URL (no trailing slash). Override via chrome.storage.local "apiBaseUrl" if needed.
-const DEFAULT_API_BASE = "https://localhost:8000";
+const DEFAULT_API_BASE = "http://18.236.97.111:8000";
 const COMPOSE_COPILOT_BTN_ID = "ta-copilot-compose-btn";
 // Stable selectors: data-testid and aria-labels stay the same across accounts; avoid dynamic ids (e.g. editorParent_2).
 const COMPOSE_SEND_CONTAINER_SELECTOR = 'div[data-testid="ComposeSendButton"]';
@@ -25,16 +25,23 @@ function findComposeToolbar() {
   return null;
 }
 
+/** Gets the email id from the current URL at call time (path or query). */
 function getEmailIdFromUrl() {
   const path = window.location.pathname || "";
-  // e.g. /mail/inbox/id/AAQkAGI5... or /mail/view/id/...
-  const match = path.match(/\/mail\/[^/]+\/id\/([^/]+)/);
-  if (!match) return null;
-  try {
-    return decodeURIComponent(match[1]);
-  } catch {
-    return match[1];
+  const params = new URLSearchParams(window.location.search || "");
+  let raw = params.get("id") || null;
+  if (!raw) {
+    const match = path.match(/\/id\/([^/?#]+)/);
+    if (match) raw = match[1];
   }
+  if (!raw) return null;
+  try {
+    raw = decodeURIComponent(raw);
+  } catch {
+    // keep raw as-is
+  }
+  const id = raw.replace(/[\x00-\x1F\x7F]/g, "").trim();
+  return id.length > 0 ? id : null;
 }
 
 function getApiBaseUrl(cb) {
@@ -144,50 +151,60 @@ function injectComposeButton() {
   const parent = findComposeToolbar();
   if (!parent) return;
   if (document.getElementById(COMPOSE_COPILOT_BTN_ID)) return;
-
   attachComposeButton(parent);
 }
 
 function attachComposeButton(parent) {
-  const existing = document.getElementById(COMPOSE_COPILOT_BTN_ID);
-  const btn = existing || createComposeCopilotButton();
+  const btn = createComposeCopilotButton();
   if (!btn) return;
 
-  if (!existing) {
-    btn.addEventListener("click", () => {
-      const editor =
-        document.querySelector(COMPOSE_EDITOR_SELECTOR) ||
-        document.querySelector('div[role="textbox"][aria-label="Message body"]');
-      if (!editor) {
-        showToast("Could not find compose editor.", true);
-        return;
-      }
-      editor.innerHTML = "<div>Hello world</div>";
-    });
-
-    const discardButton = parent.querySelector('button[aria-label="Discard"]');
-    if (discardButton && discardButton.parentElement) {
-      discardButton.parentElement.insertBefore(btn, discardButton);
-    } else {
-      parent.appendChild(btn);
+  btn.addEventListener("click", () => {
+    const editor =
+      document.querySelector(COMPOSE_EDITOR_SELECTOR) ||
+      document.querySelector('div[role="textbox"][aria-label="Message body"]');
+    if (!editor) {
+      showToast("Could not find compose editor.", true);
+      return;
     }
+    const emailId = getEmailIdFromUrl();
+    if (!emailId) {
+      showToast("No email selected.", true);
+      return;
+    }
+    getApiBaseUrl((apiBase) => {
+      const base = apiBase.replace(/\/+$/, "");
+      const url = `${base}/emails/${encodeURIComponent(emailId)}`;
+      fetch(url, {
+        method: "GET",
+        credentials: "omit",
+        headers: { Accept: "application/json" },
+      })
+        .then((res) => res.json().catch(() => ({})))
+        .then((data) => {
+          const suggested = (data && data.suggested_reply) != null ? String(data.suggested_reply).trim() : "";
+          if (suggested.length > 0) {
+            editor.innerHTML = `<div style="font-family: inherit; font-size: 12pt; white-space: pre-wrap;">${escapeHtml(suggested)}</div>`;
+          }
+        })
+        .catch(() => {});
+    });
+  });
+
+  const discardButton = parent.querySelector('button[aria-label="Discard"]');
+  if (discardButton && discardButton.parentElement) {
+    discardButton.parentElement.insertBefore(btn, discardButton);
+  } else {
+    parent.appendChild(btn);
   }
 }
 
 function run() {
+  if (!document.body) return;
   injectComposeButton();
   const observer = new MutationObserver(() => {
     injectComposeButton();
   });
   observer.observe(document.body, { childList: true, subtree: true });
-  let lastPath = location.pathname;
-  setInterval(() => {
-    if (location.pathname !== lastPath) {
-      lastPath = location.pathname;
-      document.getElementById(COMPOSE_COPILOT_BTN_ID)?.remove();
-      injectComposeButton();
-    }
-  }, 500);
 }
 
 if (document.readyState === "loading") {
