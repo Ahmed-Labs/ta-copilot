@@ -177,3 +177,56 @@ docker run -p 8000:8000 course-support-backend
 ```
 
 This Dockerfile is suitable as a starting point for ECS.
+
+## EC2 Deployment
+
+This backend can be deployed directly on an Ubuntu EC2 instance.
+
+Recommended EC2 setup:
+
+- Ubuntu 22.04 or 24.04
+- security group allows `80` for HTTP
+- attach an IAM role if you want Bedrock and DynamoDB access without static AWS keys
+
+Copy the project onto the instance so it lives at:
+
+```text
+/home/ubuntu/course-support-backend
+```
+
+Then set up your `.env` on the instance and run:
+
+```bash
+cd /home/ubuntu/course-support-backend
+chmod +x scripts/setup_ec2_backend.sh
+./scripts/setup_ec2_backend.sh
+```
+
+This script:
+
+- installs Python, venv support, and Nginx
+- creates the virtualenv
+- installs dependencies
+- installs a `systemd` service for FastAPI
+- installs an Nginx reverse proxy
+- starts both services
+
+Included deployment files:
+
+- `deploy/ec2/course-support-backend.service`
+- `deploy/ec2/course-support-backend.nginx.conf`
+- `scripts/setup_ec2_backend.sh`
+
+Useful checks on the EC2 instance:
+
+```bash
+sudo systemctl status course-support-backend
+sudo systemctl status nginx
+curl http://127.0.0.1:8000/health
+curl http://YOUR_EC2_PUBLIC_IP/health
+```
+
+Important note for Canvas support:
+
+- if the backend still depends on a local Canvas MCP server, you must also run Canvas MCP on the EC2 instance and point `CANVAS_MCP_URL` at that server
+- otherwise switch `CANVAS_MCP_URL` to a reachable hosted MCP endpoint
