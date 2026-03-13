@@ -1,14 +1,27 @@
 const loginBtn = document.getElementById("loginBtn");
 const logoutBtn = document.getElementById("logoutBtn");
 const statusEl = document.getElementById("status");
+const pollingIndicator = document.getElementById("pollingIndicator");
 
 function setStatus(text) {
   statusEl.textContent = text;
 }
 
+function setPollingActive(active) {
+  if (!pollingIndicator) return;
+  pollingIndicator.dataset.active = active ? "true" : "false";
+}
+
 function updateUi(authenticated) {
-  loginBtn.disabled = authenticated;
-  logoutBtn.disabled = !authenticated;
+  if (authenticated) {
+    loginBtn.style.display = "none";
+    logoutBtn.disabled = false;
+    setPollingActive(true);
+  } else {
+    loginBtn.style.display = "block";
+    logoutBtn.disabled = true;
+    setPollingActive(false);
+  }
 }
 
 loginBtn.addEventListener("click", () => {
@@ -42,7 +55,7 @@ chrome.runtime.sendMessage({ type: "GET_AUTH_STATE" }, (response) => {
   const authed = response && response.authenticated;
   updateUi(authed);
   if (response && response.accountEmail) {
-    setStatus("Signed in as: " + response.accountEmail);
+    setStatus("Signed in as: " + response.accountEmail + ". Polling inbox...");
   }
 });
 
