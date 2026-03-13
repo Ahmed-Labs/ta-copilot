@@ -1,0 +1,36 @@
+{
+  "manifest_version": 3,
+  "name": "TA Copilot",
+  "description": "Sign into Microsoft 365 and create a Graph subscription that streams new emails to your backend webhook.",
+  "version": "0.1.0",
+  "permissions": [
+    "identity",
+    "storage"
+  ],
+  "host_permissions": [
+    "https://login.microsoftonline.com/*",
+    "https://graph.microsoft.com/*",
+    "*://localhost/*",
+    "https://*/*"
+  ],
+  "action": {
+    "default_title": "TA Copilot",
+    "default_popup": "popup.html"
+  },
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "oauth2": {
+    "client_id": "0f964efa-01d5-446c-8e2f-07b13cc4f37b",
+    "scopes": [
+      "https://graph.microsoft.com/Mail.Read",
+      "offline_access"
+    ]
+  }
+}
