@@ -1,10 +1,11 @@
+from typing import Optional, List
 import os
 from dotenv import load_dotenv
 
 load_dotenv()
 
 
-def _parse_bool(value: str | None, default: bool = False) -> bool:
+def _parse_bool(value: Optional[str], default: bool = False) -> bool:
     if value is None:
         return default
     return value.strip().lower() in {"1", "true", "yes", "on"}

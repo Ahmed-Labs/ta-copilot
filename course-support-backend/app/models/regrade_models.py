@@ -1,3 +1,4 @@
+from typing import Optional, List
 from pydantic import BaseModel
 
 
@@ -20,7 +21,7 @@ class RegradeRequest(BaseModel):
 
 
 class RegradeRequestListResponse(BaseModel):
-    regrade_requests: list[RegradeRequest]
+    regrade_requests: List[RegradeRequest]
 
 
 class CreateRegradeResponse(BaseModel):

@@ -1,4 +1,5 @@
 from __future__ import annotations
+from typing import Optional, List
 
 import json
 from itertools import count
@@ -14,11 +15,11 @@ class CanvasMcpError(RuntimeError):
 
 class CanvasMcpClient:
     def __init__(self) -> None:
-        self._session_id: str | None = None
+        self._session_id: Optional[str] = None
         self._protocol_version = "2025-03-26"
         self._request_ids = count(1)
 
-    def list_tools(self) -> list[dict]:
+    def list_tools(self) -> List[dict]:
         self._initialize_if_needed()
         response = self._post_json(
             payload={
@@ -30,7 +31,7 @@ class CanvasMcpClient:
         )
         return response.get("result", {}).get("tools", [])
 
-    def call_tool(self, tool_name: str, arguments: dict | None = None) -> dict:
+    def call_tool(self, tool_name: str, arguments: Optional[dict] = None) -> dict:
         self._initialize_if_needed()
         response = self._post_json(
             payload={
@@ -122,7 +123,7 @@ class CanvasMcpClient:
             raise CanvasMcpError(f"Canvas MCP connection error: {exc.reason}") from exc
 
 
-_client: CanvasMcpClient | None = None
+_client: Optional[CanvasMcpClient] = None
 
 
 def get_canvas_mcp_client() -> CanvasMcpClient:
@@ -141,11 +142,11 @@ def get_canvas_mcp_client() -> CanvasMcpClient:
     return _client
 
 
-def list_canvas_tools() -> list[dict]:
+def list_canvas_tools() -> List[dict]:
     return get_canvas_mcp_client().list_tools()
 
 
-def call_canvas_tool(tool_name: str, arguments: dict | None = None) -> dict:
+def call_canvas_tool(tool_name: str, arguments: Optional[dict] = None) -> dict:
     return get_canvas_mcp_client().call_tool(tool_name=tool_name, arguments=arguments)
 
 
@@ -154,7 +155,7 @@ def summarize_canvas_tool_result(result: dict) -> str:
     if structured_content:
         return json.dumps(structured_content)
 
-    text_parts: list[str] = []
+    text_parts: List[str] = []
     for item in result.get("content", []):
         if item.get("type") == "text" and item.get("text"):
             text_parts.append(item["text"])
@@ -173,7 +174,7 @@ def _decode_mcp_response_body(raw_body: str) -> dict:
     if stripped.startswith("{"):
         return json.loads(stripped)
 
-    data_lines: list[str] = []
+    data_lines: List[str] = []
     for line in stripped.splitlines():
         if line.startswith("data:"):
             payload = line[len("data:") :].strip()

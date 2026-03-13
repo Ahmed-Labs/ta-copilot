@@ -1,3 +1,4 @@
+from typing import Optional, List
 from pydantic import BaseModel
 
 
@@ -10,4 +11,4 @@ class InsightSummary(BaseModel):
     weekly_questions: int
     unanswered_questions: int
     regrade_count: int
-    top_topics: list[TopicCount]
+    top_topics: List[TopicCount]

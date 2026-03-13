@@ -1,4 +1,5 @@
 from __future__ import annotations
+from typing import Optional, List
 
 from datetime import datetime, timezone
 from uuid import uuid4
@@ -45,7 +46,7 @@ fake_emails = [
     ),
 ]
 
-fake_regrade_requests: list[RegradeRequest] = []
+fake_regrade_requests: List[RegradeRequest] = []
 
 
 def get_all_emails():
@@ -68,11 +69,11 @@ def update_email_reply(
     email_id: str,
     suggested_reply: str,
     status: str,
-    classification: str | None = None,
-    needs_escalation: bool | None = None,
-    insight_tags: list[str] | None = None,
-    sentiment: str | None = None,
-    assigned_to: str | None = None,
+    classification: Optional[str] = None,
+    needs_escalation: Optional[bool] = None,
+    insight_tags: List[str] | None = None,
+    sentiment: Optional[str] = None,
+    assigned_to: Optional[str] = None,
 ):
     if settings.use_dynamodb:
         return _update_email_in_dynamodb(
@@ -206,11 +207,11 @@ def _update_email_in_dynamodb(
     email_id: str,
     suggested_reply: str,
     status: str,
-    classification: str | None = None,
-    needs_escalation: bool | None = None,
-    insight_tags: list[str] | None = None,
-    sentiment: str | None = None,
-    assigned_to: str | None = None,
+    classification: Optional[str] = None,
+    needs_escalation: Optional[bool] = None,
+    insight_tags: List[str] | None = None,
+    sentiment: Optional[str] = None,
+    assigned_to: Optional[str] = None,
 ):
     expression_names = {
         "#suggested_reply": "suggested_reply",

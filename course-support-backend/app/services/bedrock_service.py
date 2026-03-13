@@ -1,4 +1,5 @@
 from __future__ import annotations
+from typing import Optional, List
 
 import json
 import re
@@ -14,7 +15,7 @@ def analyze_email(
     subject: str,
     body: str,
     current_classification: str = "unclassified",
-    additional_context: str | None = None,
+    additional_context: Optional[str] = None,
 ):
     if settings.use_bedrock:
         try:
@@ -70,7 +71,7 @@ def _build_analysis_prompt(
     subject: str,
     body: str,
     current_classification: str,
-    additional_context: str | None = None,
+    additional_context: Optional[str] = None,
 ) -> str:
     context_block = ""
     if additional_context:
@@ -269,7 +270,7 @@ def _fallback_analysis(subject: str, body: str, current_classification: str) -> 
     }
 
 
-def _build_insight_tags(subject: str, body: str, classification: str) -> list[str]:
+def _build_insight_tags(subject: str, body: str, classification: str) -> List[str]:
     combined = f"{subject} {body}".lower()
     tags = [classification]
 

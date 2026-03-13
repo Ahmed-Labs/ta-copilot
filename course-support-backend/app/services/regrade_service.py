@@ -1,6 +1,7 @@
+from typing import Optional, List
 from app.models.regrade_models import RegradeRequest
 
-fake_regrade_requests: list[RegradeRequest] = []
+fake_regrade_requests: List[RegradeRequest] = []
 
 def get_all_regrade_requests():
     return fake_regrade_requests

@@ -1,3 +1,4 @@
+from typing import Optional, List
 from fastapi import APIRouter, HTTPException
 from app.models.canvas_models import AgentCanvasContextRequest
 from app.models.email_models import (
@@ -50,7 +51,7 @@ def get_email(email_id: str):
 
 
 @router.post("/{email_id}/classify", response_model=ClassifyEmailResponse)
-def classify_email(email_id: str, payload: AgentCanvasContextRequest | None = None):
+def classify_email(email_id: str, payload: Optional[AgentCanvasContextRequest] = None):
     email = get_email_by_id(email_id)
     if not email:
         raise HTTPException(status_code=404, detail="Email not found")
@@ -82,7 +83,7 @@ def classify_email(email_id: str, payload: AgentCanvasContextRequest | None = No
 
 
 @router.post("/{email_id}/generate-reply", response_model=GenerateReplyResponse)
-def generate_reply(email_id: str, payload: AgentCanvasContextRequest | None = None):
+def generate_reply(email_id: str, payload: Optional[AgentCanvasContextRequest] = None):
     email = get_email_by_id(email_id)
     if not email:
         raise HTTPException(status_code=404, detail="Email not found")
@@ -115,9 +116,9 @@ def generate_reply(email_id: str, payload: AgentCanvasContextRequest | None = No
 
 def _get_canvas_context(
     email: Email,
-    payload: AgentCanvasContextRequest | None,
-) -> str | None:
-    context_sections: list[str] = []
+    payload: Optional[AgentCanvasContextRequest],
+) -> Optional[str]:
+    context_sections: List[str] = []
     request_payload = payload or AgentCanvasContextRequest()
 
     course_identifier = request_payload.course_identifier or email.course_id

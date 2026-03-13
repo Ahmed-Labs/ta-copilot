@@ -1,4 +1,5 @@
 from __future__ import annotations
+from typing import Optional, List
 
 from app.services.canvas_mcp_service import (
     CanvasMcpError,
@@ -8,7 +9,7 @@ from app.services.canvas_mcp_service import (
 
 
 def fetch_canvas_course_context(course_identifier: str) -> str:
-    sections: list[str] = []
+    sections: List[str] = []
 
     tool_calls = [
         ("get_course_details", {"course_identifier": course_identifier}),
