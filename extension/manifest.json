@@ -1,11 +1,12 @@
 {
   "manifest_version": 3,
   "name": "TA Copilot",
-  "description": "Sign into Microsoft 365 and create a Graph subscription that streams new emails to your backend webhook.",
+  "description": "Simplify student interactions.",
   "version": "0.1.0",
   "permissions": [
     "identity",
-    "storage"
+    "storage",
+    "alarms"
   ],
   "host_permissions": [
     "https://login.microsoftonline.com/*",

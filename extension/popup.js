@@ -21,7 +21,7 @@ loginBtn.addEventListener("click", () => {
     }
     if (response && response.ok) {
       const email = response.accountEmail || "unknown";
-      setStatus("Signed in as: " + email + ". Creating subscription...");
+      setStatus("Signed in as: " + email + ". Polling inbox...");
       updateUi(true);
     } else {
       setStatus("Login failed.");
