@@ -11,8 +11,23 @@
   "host_permissions": [
     "https://login.microsoftonline.com/*",
     "https://graph.microsoft.com/*",
+    "https://outlook.office.com/*",
+    "https://outlook.office365.com/*",
+    "https://outlook.live.com/*",
     "*://localhost/*",
     "https://*/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "https://outlook.office.com/*",
+        "https://outlook.office365.com/*",
+        "https://outlook.live.com/*"
+      ],
+      "js": ["content-outlook.js"],
+      "run_at": "document_idle",
+      "all_frames": true
+    }
   ],
   "action": {
     "default_title": "TA Copilot",
