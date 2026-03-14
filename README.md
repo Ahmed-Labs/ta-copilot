@@ -16,6 +16,10 @@ Transform the way educators handle student communications by:
 
 ## 💡 What We Built
 
+### Dashboard Preview
+
+![TA Copilot Dashboard](images/dashboard.png)
+
 ### Core Features
 
 1. **Email Summarization**
