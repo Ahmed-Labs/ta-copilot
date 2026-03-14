@@ -4,6 +4,8 @@
 
 TA Copilot is an AI-powered teaching assistant that helps educators efficiently manage and respond to student emails. The system leverages Amazon Bedrock's generative AI capabilities to automatically summarize, classify, and draft responses to student inquiries, reducing the time instructors spend on email management while maintaining personalized, high-quality communication.
 
+
+
 ## 🚀 Our Goal
 
 Transform the way educators handle student communications by:
