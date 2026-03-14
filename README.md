@@ -42,6 +42,10 @@ Transform the way educators handle student communications by:
    - Fetches real-time course data (assignments, grades, announcements)
    - Provides context-aware responses based on course materials
    - Accesses student submission history for informed replies
+   - Send AI-generated responses directly to Canvas announcements
+
+![Canvas Announcements Integration](images/canvas-announcements.png)
+*Example: Sending AI-generated content directly to Canvas/Quercus announcements*
 
 5. **Email Analytics & History**
    - Stores processed emails in DynamoDB
