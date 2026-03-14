@@ -44,7 +44,7 @@ Transform the way educators handle student communications by:
 
 ## 🏗️ Architecture
 
-
+```
 ┌─────────────────────────────────────────────────────────────────┐
 │                         User Interface                          │
 │  ┌──────────────────┐              ┌──────────────────────┐    │
@@ -52,9 +52,9 @@ Transform the way educators handle student communications by:
 │  │  (Standalone)    │              │  (Outlook Plugin)    │    │
 │  └────────┬─────────┘              └──────────┬───────────┘    │
 └───────────┼────────────────────────────────────┼────────────────┘
-           │                                    │
-           │ HTTP/REST                          │ Webhook
-           ▼                                    ▼
+            │                                    │
+            │ HTTP/REST                          │ Webhook
+            ▼                                    ▼
 ┌─────────────────────────────────────────────────────────────────┐
 │                      Backend Services                           │
 │  ┌──────────────────────────────────────────────────────────┐  │
@@ -67,8 +67,8 @@ Transform the way educators handle student communications by:
 │  └────────┼───────────────┼──────────────────┼────────────┘  │
 │           │               │                  │                │
 └───────────┼───────────────┼──────────────────┼────────────────┘
-           │               │                  │
-           ▼               ▼                  ▼
+            │               │                  │
+            ▼               ▼                  ▼
 ┌─────────────────────────────────────────────────────────────────┐
 │                       AWS Services                              │
 │  ┌──────────────┐  ┌──────────────┐  ┌──────────────────────┐ │
@@ -84,6 +84,7 @@ Transform the way educators handle student communications by:
 │  │  • Course Data  • Assignments  • Student Info            │  │
 │  └──────────────────────────────────────────────────────────┘  │
 └─────────────────────────────────────────────────────────────────┘
+```
 
 ## 🔧 Technology Stack
 
@@ -142,17 +143,18 @@ Transform the way educators handle student communications by:
 
 ## 📊 Classification Output Schema
 
-json
+```json
 {
- "category": "question|complaint|request|feedback|other",
- "confidence": 0.95,
- "should_answer": true,
- "should_escalate": false,
- "route_to": "instructor|ta|automated",
- "sentiment": "positive|neutral|negative",
- "urgency": "low|medium|high",
- "suggested_reply": "AI-generated response text"
+  "category": "question|complaint|request|feedback|other",
+  "confidence": 0.95,
+  "should_answer": true,
+  "should_escalate": false,
+  "route_to": "instructor|ta|automated",
+  "sentiment": "positive|neutral|negative",
+  "urgency": "low|medium|high",
+  "suggested_reply": "AI-generated response text"
 }
+```
 
 ## 🛠️ Setup & Installation
 
@@ -164,7 +166,7 @@ json
 
 ### Installation Steps
 
-bash
+```bash
 # Clone repository
 git clone https://github.com/Ahmed-Labs/ta-copilot.git
 cd ta-copilot
@@ -181,6 +183,7 @@ streamlit run app.py
 # OR run FastAPI backend
 cd course-support-backend
 uvicorn app.main:app --reload
+```
 
 ## 🎓 Use Cases
 
@@ -205,10 +208,8 @@ MIT License
 
 ## 👥 Contributors
 
-- Selina Zarzour
-- Youssef Bayoudh
-- Justin Yearwood
-- Ahmed Mohamed
+- Selina Zarzour (@selinazarzour)
+- Ahmed Labs Team
 
 ## 🏆 Built For
 
