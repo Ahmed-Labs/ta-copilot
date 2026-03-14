@@ -208,8 +208,10 @@ MIT License
 
 ## 👥 Contributors
 
-- Selina Zarzour (@selinazarzour)
-- Ahmed Labs Team
+- Selina Zarzour
+- Youssef Bayoudh
+- Justin Yearwood
+- Ahmed Mohamed
 
 ## 🏆 Built For
 
