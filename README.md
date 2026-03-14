@@ -1,244 +1,215 @@
-TA Copilot
-TA Copilot is an AI-powered teaching support platform that helps instructors and teaching assistants manage course communication at scale. It integrates directly with Outlook, Canvas, and AWS to automatically process student emails, generate grounded draft responses, surface regrade cases, organize inbox workflows, and provide actionable insights about student confusion, sentiment, and communication patterns.
+# TA Copilot - AI Teaching Assistant for Email Management
 
-The system is designed to reduce repetitive email overhead while preserving instructor control. Routine questions are answered with AI-generated drafts grounded in official course materials, while sensitive, ambiguous, or high-risk messages are escalated to a TA or instructor for review.
+## 🎯 Project Objective
 
-What the platform does
-TA Copilot turns incoming course email into structured, actionable workflows.
+TA Copilot is an AI-powered teaching assistant that helps educators efficiently manage and respond to student emails. The system leverages Amazon Bedrock's generative AI capabilities to automatically summarize, classify, and draft responses to student inquiries, reducing the time instructors spend on email management while maintaining personalized, high-quality communication.
 
-It can:
+## 🚀 Our Goal
 
-ingest student emails from Outlook through a browser extension and webhook pipeline
-classify messages into routine, regrade, or escalation categories
-generate suggested responses using course announcements, assignments, rubrics, FAQs, and prior approved responses
-detect regrade-related messages and route them into a structured review flow
-surface live course context from Canvas, including announcements, assignments, and grade information
-store all processed email records and workflow states in DynamoDB
-provide dashboard insights such as weekly question volume, unanswered emails, common confusion topics, sentiment trends, and regrade patterns
-expose clean backend APIs for the extension, dashboard, and future integrations
-Core idea
-The project solves a common instructional bottleneck: course staff spend too much time answering repetitive emails, searching through announcements, checking grading context, and triaging regrade requests.
+Transform the way educators handle student communications by:
+- **Reducing Response Time**: Automate email triage and draft generation
+- **Improving Consistency**: Ensure all students receive timely, professional responses
+- **Enhancing Context Awareness**: Integrate course materials and student data for personalized replies
+- **Scaling Support**: Enable teaching staff to handle larger class sizes effectively
 
-TA Copilot addresses that by combining:
+## 💡 What We Built
 
-Microsoft Graph and an Outlook-side extension for inbox access
-AWS Lambda and API Gateway for event ingestion
-FastAPI for backend orchestration and application APIs
-Amazon Bedrock for classification and response generation
-DynamoDB for persistent workflow storage
-Canvas MCP for real-time academic context
-The result is a teaching copilot that is fast, grounded, and workflow-aware.
+### Core Features
 
-System architecture
-The complete system consists of four major layers.
+1. **Email Summarization**
+   - Condenses lengthy student emails into concise key points
+   - Extracts action items and important details
+   - Saves time reviewing complex inquiries
 
-1. Outlook ingestion layer
-A Chrome extension authenticates with Microsoft and accesses Outlook inbox data through the Microsoft Graph API. It monitors incoming email activity and forwards normalized message payloads to a webhook endpoint.
+2. **Intelligent Email Classification**
+   - Categorizes emails by type (question, complaint, request, feedback)
+   - Assigns confidence scores and sentiment analysis
+   - Provides routing recommendations (instructor, TA, automated response)
+   - Returns structured JSON output for workflow automation
 
-This layer is responsible for:
+3. **AI-Powered Reply Drafting**
+   - Generates professional, context-aware response suggestions
+   - Maintains appropriate tone for educational settings
+   - Allows instructors to review and customize before sending
 
-Microsoft authentication
-inbox polling or event subscription handling
-fetching full email details
-forwarding email payloads to the backend ingestion path
-2. AWS event and processing layer
-Incoming webhook events are received through API Gateway and processed by AWS Lambda. Lambda normalizes the payload, validates required fields, enriches metadata where needed, and passes the email into the backend.
+4. **Canvas LMS Integration**
+   - Fetches real-time course data (assignments, grades, announcements)
+   - Provides context-aware responses based on course materials
+   - Accesses student submission history for informed replies
 
-This layer is responsible for:
+5. **Email Analytics & History**
+   - Stores processed emails in DynamoDB
+   - Tracks response patterns and common student questions
+   - Enables data-driven insights for course improvement
 
-receiving webhook traffic
-converting provider-specific payloads into a standard email record
-triggering downstream processing
-serving as the secure bridge between Outlook events and backend storage
-3. AI backend layer
-The FastAPI backend is the core orchestration layer of the system. It stores emails, runs classification and reply generation, manages regrade records, exposes data for review tools, and aggregates insights.
+## 🏗️ Architecture
 
-This layer is responsible for:
 
-email persistence
-AI classification
-suggested reply generation
-regrade workflow management
-insights generation
-Canvas context retrieval
-API access for frontend and extension clients
-4. Academic context layer
-Canvas MCP provides real-time access to course information such as announcements, assignments, and grade-related data. This context is injected into the AI workflow so responses are grounded in the actual state of the course.
+┌─────────────────────────────────────────────────────────────────┐
+│                         User Interface                          │
+│  ┌──────────────────┐              ┌──────────────────────┐    │
+│  │  Streamlit App   │              │  Chrome Extension    │    │
+│  │  (Standalone)    │              │  (Outlook Plugin)    │    │
+│  └────────┬─────────┘              └──────────┬───────────┘    │
+└───────────┼────────────────────────────────────┼────────────────┘
+           │                                    │
+           │ HTTP/REST                          │ Webhook
+           ▼                                    ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                      Backend Services                           │
+│  ┌──────────────────────────────────────────────────────────┐  │
+│  │              FastAPI Application                         │  │
+│  │  ┌────────────┐  ┌────────────┐  ┌──────────────────┐  │  │
+│  │  │  Email     │  │  Canvas    │  │  Bedrock         │  │  │
+│  │  │  Routes    │  │  MCP       │  │  Service         │  │  │
+│  │  │            │  │  Service   │  │                  │  │  │
+│  │  └─────┬──────┘  └─────┬──────┘  └────────┬─────────┘  │  │
+│  └────────┼───────────────┼──────────────────┼────────────┘  │
+│           │               │                  │                │
+└───────────┼───────────────┼──────────────────┼────────────────┘
+           │               │                  │
+           ▼               ▼                  ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                       AWS Services                              │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────────────┐ │
+│  │   DynamoDB   │  │    Lambda    │  │   Amazon Bedrock     │ │
+│  │              │  │              │  │                      │ │
+│  │  • Emails    │  │  • Webhook   │  │  • Claude 3.5 Sonnet│ │
+│  │  • Analytics │  │  • Processing│  │  • Claude 3 Haiku   │ │
+│  │  • History   │  │              │  │  • Amazon Nova      │ │
+│  └──────────────┘  └──────────────┘  └──────────────────────┘ │
+│                                                                 │
+│  ┌──────────────────────────────────────────────────────────┐  │
+│  │              Canvas LMS API (External)                   │  │
+│  │  • Course Data  • Assignments  • Student Info            │  │
+│  └──────────────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────────────┘
 
-This layer is responsible for:
+## 🔧 Technology Stack
 
-retrieving course details
-retrieving announcements
-retrieving assignments and due dates
-retrieving relevant grade context
-giving the AI trusted course data before it generates a response
-AWS services used
-Amazon Bedrock
-Amazon Bedrock powers the intelligence layer of the system. It is used to classify incoming emails, determine escalation requirements, assign routing targets, extract insight tags, and generate suggested replies.
+### Frontend
+- **Streamlit**: Rapid prototyping UI for standalone demo
+- **Chrome Extension**: Browser-based Outlook integration
+- **HTML/CSS/JavaScript**: Custom dashboard interface
 
-The AI output is structured and normalized into fields such as:
+### Backend
+- **FastAPI**: High-performance Python web framework
+- **Python 3.8+**: Core application logic
+- **Boto3**: AWS SDK for Python
 
-classification
-sentiment
-escalation requirement
-assignment target
-insight tags
-suggested reply
-Amazon DynamoDB
-DynamoDB stores the structured backend state.
+### AI & Machine Learning
+- **Amazon Bedrock**: Managed generative AI service
+  - Claude 3.5 Sonnet (primary model)
+  - Claude 3 Haiku (fast responses)
+  - Amazon Nova (cost-effective alternative)
+- **Converse API**: Unified interface for multiple AI models
 
-Primary tables include:
+### Cloud Infrastructure (AWS)
+- **Amazon DynamoDB**: NoSQL database for email storage and analytics
+- **AWS Lambda**: Serverless webhook processing
+- **Amazon API Gateway**: RESTful API management
+- **IAM**: Secure credential management
 
-Emails
-RegradeRequests
-The Emails table stores:
+### Integrations
+- **Canvas LMS API**: Course management system integration
+- **Model Context Protocol (MCP)**: Standardized context sharing
 
-sender
-subject
-body
-received timestamp
-classification
-sentiment
-escalation state
-insight tags
-assigned reviewer
-suggested reply
-source metadata such as webhook message identifiers
-The RegradeRequests table stores:
+## 🔄 Data Flow
 
-request id
-linked email id
-student email
-course id
-assignment name
-reason
-workflow status
-AWS Lambda
-Lambda serves as the event-processing layer between the incoming webhook and the backend. It receives email events, normalizes provider payloads, and forwards them into the application flow.
+1. **Email Input**
+   - User pastes email into Streamlit app OR
+   - Chrome extension captures email from Outlook
 
-Amazon API Gateway
-API Gateway provides the public webhook entry point used by the Outlook extension and future external integrations.
+2. **Processing Request**
+   - Frontend sends email content to FastAPI backend
+   - Backend validates and routes to appropriate service
 
-Amazon EC2
-EC2 is used to host the deployed application stack, including the AI agent environment and backend services.
+3. **AI Analysis**
+   - Bedrock Service constructs prompt with course context
+   - Canvas MCP Service fetches relevant course data
+   - AI model (Claude/Nova) processes request
+   - Returns structured response (summary/classification/reply)
 
-Backend API
-The backend exposes a set of REST endpoints for ingestion, workflow management, and analytics.
+4. **Storage & Analytics**
+   - DynamoDB Service stores email metadata
+   - Tracks processing history and patterns
+   - Enables future analytics and insights
 
-Key endpoints include:
+5. **Response Delivery**
+   - Formatted response returned to frontend
+   - User reviews and can copy/edit reply
+   - Optional: Send via Lambda webhook integration
 
-GET /health
-GET /emails
-POST /emails
-GET /emails/{email_id}
-POST /emails/{email_id}/classify
-POST /emails/{email_id}/generate-reply
-GET /insights/summary
-GET /regrade
-POST /regrade
-GET /canvas/tools
-POST /canvas/call
-GET /canvas/course-context/{course_identifier}
-These APIs allow the platform to:
+## 📊 Classification Output Schema
 
-ingest new messages
-retrieve inbox records
-classify messages
-generate draft responses
-manage regrade requests
-inspect Canvas context
-support dashboards and future administrative tools
-AI workflow
-When a new email arrives, TA Copilot performs the following sequence:
+json
+{
+ "category": "question|complaint|request|feedback|other",
+ "confidence": 0.95,
+ "should_answer": true,
+ "should_escalate": false,
+ "route_to": "instructor|ta|automated",
+ "sentiment": "positive|neutral|negative",
+ "urgency": "low|medium|high",
+ "suggested_reply": "AI-generated response text"
+}
 
-The email is received from Outlook and normalized into a standard record.
-The email is stored in DynamoDB.
-The backend retrieves relevant course context from Canvas.
-Amazon Bedrock analyzes the email using both the message content and trusted course data.
-The system returns:
-a classification
-a sentiment label
-an escalation decision
-routing guidance
-insight tags
-a suggested reply draft
-The backend updates the stored email record.
-The extension or dashboard displays the result to course staff.
-Routine emails are marked as ready for review. Regrade and escalation cases are routed to human staff.
+## 🛠️ Setup & Installation
 
-Canvas integration
-The Canvas integration is one of the most important parts of the system because it grounds the AI in actual course data.
+### Prerequisites
+- Python 3.8+
+- AWS Account with Bedrock access enabled (us-west-2)
+- Canvas LMS API token (optional)
+- AWS credentials configured
 
-TA Copilot uses Canvas MCP to retrieve:
+### Installation Steps
 
-course details
-announcements
-assignment information
-grade-related context
-This allows the model to answer questions such as:
+bash
+# Clone repository
+git clone https://github.com/Ahmed-Labs/ta-copilot.git
+cd ta-copilot
 
-when is the assignment due
-was this already announced
-what does the current rubric or assignment say
-what grade-related context is available for this student
-Instead of producing generic answers, the AI responds with course-specific, up-to-date context.
+# Install dependencies
+pip install -r requirements.txt
 
-Extension
-The browser extension acts as the Outlook-side interface for instructors or TAs.
+# Configure AWS credentials
+aws configure
 
-Its responsibilities include:
+# Run Streamlit app
+streamlit run app.py
 
-authenticating with Microsoft
-polling or subscribing to inbox activity
-retrieving email details using Microsoft Graph
-forwarding normalized messages to the webhook/backend pipeline
-serving as the foundation for future UI enhancements such as suggested reply overlays and inbox controls
-Dashboard and insights
-TA Copilot also functions as an analytics layer for course communication.
+# OR run FastAPI backend
+cd course-support-backend
+uvicorn app.main:app --reload
 
-The insights workflow summarizes:
+## 🎓 Use Cases
 
-weekly question volume
-unanswered emails
-common confusion topics
-sentiment distribution
-regrade frequency
-communication patterns across the course
-This gives instructors a course-level view of what students are struggling with and what content may need clarification.
+- **Office Hours Overflow**: Handle common questions when instructors are unavailable
+- **Large Class Management**: Scale support for courses with 100+ students
+- **Consistent Communication**: Maintain uniform response quality across teaching staff
+- **After-Hours Support**: Provide immediate draft responses outside business hours
+- **Multilingual Support**: Leverage AI for translation and cross-language communication
 
-Regrade support
-Regrade messages are treated as a dedicated workflow, not just another email.
+## 🔮 Future Enhancements
 
-The system can:
+- **Bedrock Knowledge Bases**: RAG-based retrieval from course materials
+- **Amazon SES Integration**: Direct email sending capability
+- **Microsoft Graph API**: Native Outlook integration
+- **Multi-Course Support**: Handle multiple courses simultaneously
+- **Student Sentiment Tracking**: Long-term analytics on student satisfaction
+- **Automated Follow-ups**: Scheduled reminders for unanswered questions
 
-detect regrade intent
-extract the reason
-link the request to the source email
-create a structured regrade record
-route the case to the appropriate reviewer
-This helps instructors separate normal inbox traffic from grading disputes and academic review requests.
+## 📝 License
 
-Design principles
-TA Copilot was built around five principles:
+MIT License
 
-grounded responses over hallucinated ones
-instructor review over blind automation
-structured workflows over raw email chaos
-real course context over generic chatbot behavior
-scalable APIs over one-off scripts
-The goal is not to replace instructors. The goal is to remove repetitive friction so instructors can spend more time on high-value student interactions.
+## 👥 Contributors
 
-Deployment
-The backend is designed to run cleanly in AWS and supports EC2-based deployment. It includes deployment assets for:
+- Selina Zarzour
+- Youssef Bayoudh
+- Justin Yearwood
+- Ahmed Mohamed
 
-environment-based configuration
-Nginx reverse proxy
-systemd service management
-DynamoDB-backed persistence
-Bedrock integration
-This makes it suitable for both hackathon demonstration and continued iteration after the event.
+## 🏆 Built For
 
-End-to-end summary
-TA Copilot is a full-stack teaching support system that connects Outlook, Canvas, and AWS into a single AI-assisted workflow. It receives student emails, enriches them with live course context, uses Bedrock to classify and draft responses, stores structured records in DynamoDB, routes complex cases to humans, and provides a high-level view of communication trends across the course.
-
-It transforms the instructor inbox from a passive message queue into an intelligent operational system.
+AWS Hackathon 2026 - Leveraging Amazon Bedrock for Educational Innovation
